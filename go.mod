@@ -2,7 +2,6 @@ module github.com/ipfs/go-ipfs
 
 require (
 	bazil.org/fuse v0.0.0-20180421153158-65cc252bf669
-	github.com/AndreasBriese/bbloom v0.0.0-20190823232136-616930265c33 // indirect
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/bren2010/proquint v0.0.0-20160323162903-38337c27106d
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f
@@ -10,8 +9,7 @@ require (
 	github.com/elgris/jsondiff v0.0.0-20160530203242-765b5c24c302
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
-	github.com/go-critic/go-critic v0.4.0 // indirect
-	github.com/godcong/go-datastore-oss v0.0.1
+	github.com/godcong/go-datastore-oss v0.5.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/golang-lru v0.5.3
@@ -99,7 +97,10 @@ require (
 	github.com/whyrusleeping/go-sysinfo v0.0.0-20190219211824-4a357d4b90b1
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7
 	github.com/whyrusleeping/tar-utils v0.0.0-20180509141711-8c6c8ba81d5c
+	go.uber.org/dig v1.8.0 // indirect
 	go.uber.org/fx v1.9.0
+	go.uber.org/goleak v0.10.0 // indirect
+	go.uber.org/multierr v1.4.0 // indirect
 	golang.org/x/sys v0.0.0-20190926180325-855e68c8590b
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )
@@ -109,5 +110,7 @@ replace github.com/go-critic/go-critic v0.0.0-20181204210945-ee9bf5809ead => git
 replace github.com/golangci/golangci-lint v1.16.1-0.20190425135923-692dacb773b7 => github.com/golangci/golangci-lint v1.21.0
 
 replace github.com/ipfs/go-ipfs v0.4.22 => github.com/godcong/ipfs-plugin-build v0.5.0
+
+replace github.com/ipfs/go-ds-s3 v0.3.0 => github.com/godcong/go-ds-s3 v0.5.0
 
 go 1.12
