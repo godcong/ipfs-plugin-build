@@ -9,7 +9,7 @@ require (
 	github.com/elgris/jsondiff v0.0.0-20160530203242-765b5c24c302
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
-	github.com/godcong/go-datastore-oss v0.5.0
+	github.com/godcong/go-datastore-oss v0.5.1
 	github.com/gogo/protobuf v1.3.1
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/golang-lru v0.5.3
@@ -110,6 +110,8 @@ replace github.com/go-critic/go-critic v0.0.0-20181204210945-ee9bf5809ead => git
 replace github.com/golangci/golangci-lint v1.16.1-0.20190425135923-692dacb773b7 => github.com/golangci/golangci-lint v1.21.0
 
 replace github.com/ipfs/go-ipfs v0.4.22 => github.com/godcong/ipfs-plugin-build v0.5.0
+
+replace github.com/ipfs/go-ds-badger v0.2.0 => github.com/godcong/go-ds-badger v0.5.1
 
 replace github.com/ipfs/go-ds-s3 v0.3.0 => github.com/godcong/go-ds-s3 v0.5.0
 
