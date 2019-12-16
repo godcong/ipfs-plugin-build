@@ -8,14 +8,15 @@ import (
 	"io"
 	"strings"
 
+	version "github.com/ipfs/go-ipfs"
 	core "github.com/ipfs/go-ipfs/core"
 	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
 
 	cmds "github.com/ipfs/go-ipfs-cmds"
-	ic "github.com/libp2p/go-libp2p-crypto"
+	ic "github.com/libp2p/go-libp2p-core/crypto"
+	peer "github.com/libp2p/go-libp2p-core/peer"
+	pstore "github.com/libp2p/go-libp2p-core/peerstore"
 	kb "github.com/libp2p/go-libp2p-kbucket"
-	peer "github.com/libp2p/go-libp2p-peer"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
 	identify "github.com/libp2p/go-libp2p/p2p/protocol/identify"
 )
 
@@ -189,6 +190,6 @@ func printSelf(node *core.IpfsNode) (interface{}, error) {
 		}
 	}
 	info.ProtocolVersion = identify.LibP2PVersion
-	info.AgentVersion = identify.ClientVersion
+	info.AgentVersion = version.UserAgent
 	return info, nil
 }

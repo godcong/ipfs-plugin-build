@@ -7,16 +7,13 @@ import (
 	"time"
 
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	"github.com/ipfs/go-ipfs-config"
+	config "github.com/ipfs/go-ipfs-config"
 	util "github.com/ipfs/go-ipfs-util"
-	peer "github.com/libp2p/go-libp2p-peer"
-	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
+	peer "github.com/libp2p/go-libp2p-core/peer"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 
 	"github.com/ipfs/go-ipfs/core/node/libp2p"
 	"github.com/ipfs/go-ipfs/p2p"
-	"github.com/ipfs/go-ipfs/provider"
-	"github.com/ipfs/go-ipfs/reprovide"
 
 	offline "github.com/ipfs/go-ipfs-exchange-offline"
 	offroute "github.com/ipfs/go-ipfs-routing/offline"
@@ -26,6 +23,7 @@ import (
 )
 
 var BaseLibP2P = fx.Options(
+	fx.Provide(libp2p.UserAgent),
 	fx.Provide(libp2p.PNet),
 	fx.Provide(libp2p.ConnectionManager),
 	fx.Provide(libp2p.DefaultTransports),
@@ -69,8 +67,10 @@ func LibP2P(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 
 	// parse PubSub config
 
-	ps := fx.Options()
+	ps, disc := fx.Options(), fx.Options()
 	if bcfg.getOpt("pubsub") || bcfg.getOpt("ipnsps") {
+		disc = fx.Provide(libp2p.TopicDiscovery())
+
 		var pubsubOptions []pubsub.Option
 		pubsubOptions = append(
 			pubsubOptions,
@@ -81,10 +81,10 @@ func LibP2P(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 		switch cfg.Pubsub.Router {
 		case "":
 			fallthrough
-		case "floodsub":
-			ps = fx.Provide(libp2p.FloodSub(pubsubOptions...))
 		case "gossipsub":
 			ps = fx.Provide(libp2p.GossipSub(pubsubOptions...))
+		case "floodsub":
+			ps = fx.Provide(libp2p.FloodSub(pubsubOptions...))
 		default:
 			return fx.Error(fmt.Errorf("unknown pubsub router %s", cfg.Pubsub.Router))
 		}
@@ -110,11 +110,12 @@ func LibP2P(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 
 		maybeProvide(libp2p.BandwidthCounter, !cfg.Swarm.DisableBandwidthMetrics),
 		maybeProvide(libp2p.NatPortMap, !cfg.Swarm.DisableNatPortMap),
-		maybeProvide(libp2p.AutoRealy, cfg.Swarm.EnableAutoRelay),
+		maybeProvide(libp2p.AutoRelay, cfg.Swarm.EnableAutoRelay),
 		maybeProvide(libp2p.QUIC, cfg.Experimental.QUIC),
 		maybeInvoke(libp2p.AutoNATService(cfg.Experimental.QUIC), cfg.Swarm.EnableAutoNATService),
 		connmgr,
 		ps,
+		disc,
 	)
 
 	return opts
@@ -163,7 +164,7 @@ func Identity(cfg *config.Config) fx.Option {
 	if cfg.Identity.PrivKey == "" {
 		return fx.Options( // No PK (usually in tests)
 			fx.Provide(PeerID(id)),
-			fx.Provide(pstoremem.NewPeerstore),
+			fx.Provide(libp2p.Peerstore),
 		)
 	}
 
@@ -175,7 +176,7 @@ func Identity(cfg *config.Config) fx.Option {
 	return fx.Options( // Full identity
 		fx.Provide(PeerID(id)),
 		fx.Provide(PrivateKey(sk)),
-		fx.Provide(pstoremem.NewPeerstore),
+		fx.Provide(libp2p.Peerstore),
 
 		fx.Invoke(libp2p.PstoreAddSelfKeys),
 	)
@@ -185,42 +186,6 @@ func Identity(cfg *config.Config) fx.Option {
 var IPNS = fx.Options(
 	fx.Provide(RecordValidator),
 )
-
-// Providers groups units managing provider routing records
-func Providers(cfg *config.Config) fx.Option {
-	reproviderInterval := kReprovideFrequency
-	if cfg.Reprovider.Interval != "" {
-		dur, err := time.ParseDuration(cfg.Reprovider.Interval)
-		if err != nil {
-			return fx.Error(err)
-		}
-
-		reproviderInterval = dur
-	}
-
-	var keyProvider fx.Option
-	switch cfg.Reprovider.Strategy {
-	case "all":
-		fallthrough
-	case "":
-		keyProvider = fx.Provide(reprovide.NewBlockstoreProvider)
-	case "roots":
-		keyProvider = fx.Provide(reprovide.NewPinnedProvider(true))
-	case "pinned":
-		keyProvider = fx.Provide(reprovide.NewPinnedProvider(false))
-	default:
-		return fx.Error(fmt.Errorf("unknown reprovider strategy '%s'", cfg.Reprovider.Strategy))
-	}
-
-	return fx.Options(
-		fx.Provide(ProviderQueue),
-		fx.Provide(ProviderCtor),
-		fx.Provide(ReproviderCtor(reproviderInterval)),
-		keyProvider,
-
-		fx.Invoke(Reprovider),
-	)
-}
 
 // Online groups online-only units
 func Online(bcfg *BuildCfg, cfg *config.Config) fx.Option {
@@ -261,8 +226,11 @@ func Online(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 		recordLifetime = d
 	}
 
+	/* don't provide from bitswap when the strategic provider service is active */
+	shouldBitswapProvide := !cfg.Experimental.StrategicProviding
+
 	return fx.Options(
-		fx.Provide(OnlineExchange),
+		fx.Provide(OnlineExchange(shouldBitswapProvide)),
 		fx.Provide(Namesys(ipnsCacheSize)),
 
 		fx.Invoke(IpnsRepublisher(repubPeriod, recordLifetime)),
@@ -270,17 +238,19 @@ func Online(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 		fx.Provide(p2p.New),
 
 		LibP2P(bcfg, cfg),
-		Providers(cfg),
+		OnlineProviders(cfg.Experimental.StrategicProviding, cfg.Reprovider.Strategy, cfg.Reprovider.Interval),
 	)
 }
 
 // Offline groups offline alternatives to Online units
-var Offline = fx.Options(
-	fx.Provide(offline.Exchange),
-	fx.Provide(Namesys(0)),
-	fx.Provide(offroute.NewOfflineRouter),
-	fx.Provide(provider.NewOfflineProvider),
-)
+func Offline(cfg *config.Config) fx.Option {
+	return fx.Options(
+		fx.Provide(offline.Exchange),
+		fx.Provide(Namesys(0)),
+		fx.Provide(offroute.NewOfflineRouter),
+		OfflineProviders(cfg.Experimental.StrategicProviding, cfg.Reprovider.Strategy, cfg.Reprovider.Interval),
+	)
+}
 
 // Core groups basic IPFS services
 var Core = fx.Options(
@@ -295,7 +265,7 @@ func Networked(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 	if bcfg.Online {
 		return Online(bcfg, cfg)
 	}
-	return Offline
+	return Offline(cfg)
 }
 
 // IPFS builds a group of fx Options based on the passed BuildCfg

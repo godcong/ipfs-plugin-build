@@ -8,6 +8,39 @@ test_description="Test daemon command"
 
 . lib/test-lib.sh
 
+test_expect_success "create badger config" '
+  ipfs init --profile=badgerds,test > /dev/null &&
+  cp "$IPFS_PATH/config" init-config
+'
+
+test_expect_success "cleanup repo" '
+  rm -rf "$IPFS_PATH"
+'
+
+test_launch_ipfs_daemon --init --init-config="$(pwd)/init-config" --init-profile=test
+test_kill_ipfs_daemon
+
+test_expect_success "daemon initialization with existing config works" '
+  ipfs config "Datastore.Spec.child.path" >actual &&
+  test $(cat actual) = "badgerds" &&
+  ipfs config Addresses > orig_addrs
+'
+
+test_expect_success "cleanup repo" '
+  rm -rf "$IPFS_PATH"
+'
+
+test_launch_ipfs_daemon --init --init-config="$(pwd)/init-config" --init-profile=test,randomports
+test_kill_ipfs_daemon
+
+test_expect_success "daemon initialization with existing config + profiles works" '
+  ipfs config Addresses >new_addrs &&
+  test_expect_code 1 diff -q new_addrs orig_addrs
+'
+
+test_expect_success "cleanup repo" '
+  rm -rf "$IPFS_PATH"
+'
 
 test_init_ipfs
 test_launch_ipfs_daemon
@@ -133,7 +166,7 @@ test_expect_success "'ipfs daemon' should be able to run with a pipe attached to
 '
 
 test_expect_success "daemon with pipe eventually becomes live" '
-  pollEndpoint -host='$API_MADDR' -ep=/version -v -tout=1s -tries=10 >stdin_poll_apiout 2>stdin_poll_apierr &&
+  pollEndpoint -host='$API_MADDR' -v -tout=1s -tries=10 >stdin_poll_apiout 2>stdin_poll_apierr &&
   test_kill_repeat_10_sec $DAEMON_PID ||
   test_fsh cat stdin_daemon_out || test_fsh cat stdin_daemon_err || test_fsh cat stdin_poll_apiout || test_fsh cat stdin_poll_apierr
 '

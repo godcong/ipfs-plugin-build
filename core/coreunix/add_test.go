@@ -12,13 +12,13 @@ import (
 	"time"
 
 	"github.com/ipfs/go-ipfs/core"
-	"github.com/ipfs/go-ipfs/pin/gc"
+	"github.com/ipfs/go-ipfs/gc"
 	"github.com/ipfs/go-ipfs/repo"
 
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
-	cid "github.com/ipfs/go-cid"
-	datastore "github.com/ipfs/go-datastore"
+	"github.com/ipfs/go-cid"
+	"github.com/ipfs/go-datastore"
 	syncds "github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	config "github.com/ipfs/go-ipfs-config"
@@ -247,7 +247,7 @@ func TestAddGCLive(t *testing.T) {
 	defer cancel()
 
 	set := cid.NewSet()
-	err = dag.EnumerateChildren(ctx, dag.GetLinksWithDAG(node.DAG), last, set.Visit)
+	err = dag.Walk(ctx, dag.GetLinksWithDAG(node.DAG), last, set.Visit)
 	if err != nil {
 		t.Fatal(err)
 	}

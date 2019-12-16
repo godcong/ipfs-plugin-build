@@ -14,11 +14,12 @@ import (
 // This file is being generated as part of plugin build process
 // To change it, modify the plugin/loader/preload.sh
 
-var preloadPlugins = []plugin.Plugin{
-	pluginipldgit.Plugins[0],
-	pluginbadgerds.Plugins[0],
-	pluginflatfs.Plugins[0],
-	pluginlevelds.Plugins[0],
-	plugins3.Plugins[0],
-	pluginoss.Plugins[0],
+func init() {
+	Preload(pluginipldgit.Plugins...)
+	Preload(pluginbadgerds.Plugins...)
+	Preload(pluginflatfs.Plugins...)
+	Preload(pluginlevelds.Plugins...)
+	Preload(plugins3.Plugins...)
+	Preload(pluginoss.Plugins...)
+
 }

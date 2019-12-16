@@ -3,21 +3,25 @@
 ![banner](https://ipfs.io/ipfs/QmVk7srrwahXLNmcDYvyUEJptyoxpndnRa57YJ11L4jV26/ipfs.go.png)
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
-[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
+[![Matrix](https://img.shields.io/badge/matrix-%23ipfs%3Amatrix.org-blue.svg?style=flat-square)](https://matrix.to/#/room/#ipfs:matrix.org)
+[![IRC](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
+[![Discord](https://img.shields.io/discord/475789330380488707?color=blueviolet&label=discord&style=flat-square)](https://discord.gg/24fmuwR)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square)](https://godoc.org/github.com/ipfs/go-ipfs)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-[![GoDoc](https://godoc.org/github.com/ipfs/go-ipfs?status.svg)](https://godoc.org/github.com/ipfs/go-ipfs)
-[![Build Status](https://travis-ci.com/ipfs/go-ipfs.svg?branch=master)](https://travis-ci.com/ipfs/go-ipfs)
+[![CircleCI](https://img.shields.io/circleci/build/github/ipfs/go-ipfs?style=flat-square)](https://circleci.com/gh/ipfs/go-ipfs)
 
 ## What is IPFS?
 
-IPFS is a global, versioned, peer-to-peer filesystem. It combines good ideas from Git, BitTorrent, Kademlia, SFS, and the Web. It is like a single bittorrent swarm, exchanging git objects. IPFS provides an interface as simple as the HTTP web, but with permanence built in. You can also mount the world at /ipfs.
+IPFS is a global, versioned, peer-to-peer filesystem. It combines good ideas from previous systems such Git, BitTorrent, Kademlia, SFS, and the Web. It is like a single bittorrent swarm, exchanging git objects. IPFS provides an interface as simple as the HTTP web, but with permanence built in. You can also mount the world at /ipfs.
 
-For more info see: https://github.com/ipfs/ipfs.
+For more info see: https://docs.ipfs.io/introduction/overview/
 
-Please put all issues regarding:
-  - IPFS _design_ in the [ipfs repo issues](https://github.com/ipfs/ipfs/issues).
-  - Go IPFS _implementation_ in [this repo](https://github.com/ipfs/go-ipfs/issues).
+Before opening an issue, consider using one of the following locations to ensure you are opening your thread in the right place:
+  - go-ipfs _implementation_ bugs in [this repo](https://github.com/ipfs/go-ipfs/issues).
+  - Documentation issues in [ipfs/docs issues](https://github.com/ipfs/docs/issues).
+  - IPFS _design_ in [ipfs/specs issues](https://github.com/ipfs/specs/issues).
+  - Exploration of new ideas in [ipfs/notes issues](https://github.com/ipfs/notes/issues).
+  - Ask questions and meet the rest of the community at the [IPFS Forum](https://discuss.ipfs.io).
 
 ## Table of Contents
 
@@ -30,15 +34,17 @@ Please put all issues regarding:
     - [Install Go](#install-go)
     - [Download and Compile IPFS](#download-and-compile-ipfs)
     - [Troubleshooting](#troubleshooting)
-  - [Development Dependencies](#development-dependencies)
-  - [Updating](#updating-go-ipfs)
-- [Usage](#usage)
+  - [Updating go-ipfs](#updating-go-ipfs)
 - [Getting Started](#getting-started)
   - [Some things to try](#some-things-to-try)
-  - [Docker usage](#docker-usage)
+  - [Usage](#usage)
+  - [Running IPFS inside Docker](#running-ipfs-inside-docker)
   - [Troubleshooting](#troubleshooting-1)
 - [Packages](#packages)
 - [Development](#development)
+  - [CLI, HTTP-API, Architecture Diagram](#cli-http-api-architecture-diagram)
+  - [Testing](#testing)
+  - [Development Dependencies](#development-dependencies)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -52,11 +58,16 @@ If the issue is a protocol weakness that cannot be immediately exploited or some
 
 ## Install
 
-The canonical download instructions for IPFS are over at: https://docs.ipfs.io/introduction/install/. It is **highly suggested** you follow those instructions if you are not interested in working on IPFS development.
+The canonical download instructions for IPFS are over at: https://docs.ipfs.io/guides/guides/install/. It is **highly suggested** you follow those instructions if you are not interested in working on IPFS development.
 
 ### System Requirements
 
-IPFS can run on most Linux, macOS, and Windows systems. We recommend running it on a machine with at least 2 GB of RAM (it’ll do fine with only one CPU core), but it should run fine with as little as 1 GB of RAM. On systems with less memory, it may not be completely stable.
+IPFS can run on most Linux, macOS, and Windows systems. We recommend running it on a machine with at least 2 GB of RAM and 2 CPU cores (go-ipfs is highly parallel). On systems with less memory, it may not be completely stable.
+
+If your system is resource constrained, we recommend:
+
+1. Installing OpenSSL and rebuilding go-ipfs manually with `make build GOFLAGS=-tags=openssl`. See the [download and compile](#download-and-compile-ipfs) section for more information on compiling go-ipfs.
+2. Initializing your daemon with `ipfs init --profile=lowpower`
 
 ### Install prebuilt packages
 
@@ -114,11 +125,40 @@ With snap, in any of the [supported Linux distributions](https://snapcraft.io/do
 $ sudo snap install ipfs
 ```
 
+### From Windows package managers
+
+- [Chocolatey](#chocolatey)
+- [Scoop](#scoop)
+
+#### Chocolatey
+
+The package [ipfs](https://chocolatey.org/packages/ipfs) currently points to go-ipfs and is being maintained.
+
+```Powershell
+PS> choco install ipfs
+```
+
+#### Scoop
+
+Scoop provides `go-ipfs` in its 'extras' bucket.
+```Powershell
+PS> scoop bucket add extras
+PS> scoop install go-ipfs
+```
+
 ### Build from Source
+
+go-ipfs's build system requires Go 1.13 and some standard POSIX build tools:
+
+* GNU make
+* Git
+* GCC (or some other go compatible C Compiler) (optional)
+
+To build without GCC, build with `CGO_ENABLED=0` (e.g., `make build CGO_ENABLED=0`).
 
 #### Install Go
 
-The build process for ipfs requires Go 1.11 or higher. If you don't have it: [Download Go 1.11+](https://golang.org/dl/).
+The build process for ipfs requires Go 1.12 or higher. If you don't have it: [Download Go 1.12+](https://golang.org/dl/).
 
 You'll need to add Go's bin directories to your `$PATH` environment variable e.g., by adding these lines to your `/etc/profile` (for a system-wide installation) or `$HOME/.profile`:
 
@@ -138,11 +178,26 @@ $ cd go-ipfs
 $ make install
 ```
 
-If you are building on a non-GNU system, use `gmake` in place of `make`.  
-Unsupported platforms (run `(g)make supported` for a list) will also need to set the `nofuse` gotag during build.
+Alternatively, you can run `make build` to build the go-ipfs binary (storing it in `cmd/ipfs/ipfs`) without installing it.
+
+**NOTE:** If you get an error along the lines of "fatal error: stdlib.h: No such file or directory", you're missing a C compiler. Either re-run `make` with `CGO_ENABLED=0` or install GCC.
+
+##### Cross Compiling
+
+Compiling for a different platform is as simple as running:
+
 ```
-$ GOTAGS=nofuse (g)make install
+make build GOOS=myTargetOS GOARCH=myTargetArchitecture
 ```
+
+##### OpenSSL
+
+To build go-ipfs with OpenSSL support, append `GOFLAGS=-tags=openssl` to your `make` invocation. Building with OpenSSL should significantly reduce the background CPU usage on nodes that frequently make or receive new connections.
+
+Note: OpenSSL requires CGO support and, by default, CGO is disabled when cross compiling. To cross compile with OpenSSL support, you must:
+
+1. Install a compiler toolchain for the target platform.
+2. Set the `CGO_ENABLED=1` environment variable.
 
 #### Troubleshooting
 
@@ -193,7 +248,26 @@ $ ipfs get /ipns/dist.ipfs.io/go-ipfs/$VERSION/go-ipfs_$VERSION_linux-arm.tar.gz
 $ ipfs get /ipns/dist.ipfs.io/go-ipfs/$VERSION/go-ipfs_$VERSION_windows-amd64.zip # windows 64-bit build
 ```
 
-## Usage
+## Getting Started
+
+See also: https://docs.ipfs.io/introduction/usage/
+
+To start using IPFS, you must first initialize IPFS's config files on your
+system, this is done with `ipfs init`. See `ipfs init --help` for information on
+the optional arguments it takes. After initialization is complete, you can use
+`ipfs mount`, `ipfs add` and any of the other commands to explore!
+
+### Some things to try
+
+Basic proof of 'ipfs working' locally:
+
+	echo "hello world" > hello
+	ipfs add hello
+	# This should output a hash string that looks something like:
+	# QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o
+	ipfs cat <that hash>
+
+### Usage
 
 ```
   ipfs - Global p2p merkle-dag filesystem.
@@ -245,27 +319,7 @@ SUBCOMMANDS
     export IPFS_PATH=/path/to/ipfsrepo
 ```
 
-## Getting Started
-
-See also: http://ipfs.io/docs/getting-started/
-
-To start using IPFS, you must first initialize IPFS's config files on your
-system, this is done with `ipfs init`. See `ipfs init --help` for information on
-the optional arguments it takes. After initialization is complete, you can use
-`ipfs mount`, `ipfs add` and any of the other commands to explore!
-
-### Some things to try
-
-Basic proof of 'ipfs working' locally:
-
-	echo "hello world" > hello
-	ipfs add hello
-	# This should output a hash string that looks something like:
-	# QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o
-	ipfs cat <that hash>
-
-
-### Docker usage
+### Running IPFS inside Docker
 
 An IPFS docker image is hosted at [hub.docker.com/r/ipfs/go-ipfs](https://hub.docker.com/r/ipfs/go-ipfs/).
 To make files visible inside the container you need to mount a host directory
@@ -311,6 +365,15 @@ Stop the running container:
 When starting a container running ipfs for the first time with an empty data directory, it will call `ipfs init` to initialize configuration files and generate a new keypair. At this time, you can choose which profile to apply using the `IPFS_PROFILE` environment variable:
 
     docker run -d --name ipfs_host -e IPFS_PROFILE=server -v $ipfs_staging:/export -v $ipfs_data:/data/ipfs -p 4001:4001 -p 127.0.0.1:8080:8080 -p 127.0.0.1:5001:5001 ipfs/go-ipfs:latest
+
+It is possible to initialize the container with a swarm key file (`/data/ipfs/swarm.key`) using the variables `IPFS_SWARM_KEY` and `IPFS_SWARM_KEY_FILE`. The `IPFS_SWARM_KEY` creates `swarm.key` with the contents of the variable itself, whilst `IPFS_SWARM_KEY_FILE` copies the key from a path stored in the variable. The `IPFS_SWARM_KEY_FILE` **overwrites** the key generated by `IPFS_SWARM_KEY`.
+
+    docker run -d --name ipfs_host -e IPFS_SWARM_KEY=<your swarm key> -v $ipfs_staging:/export -v $ipfs_data:/data/ipfs -p 4001:4001 -p 127.0.0.1:8080:8080 -p 127.0.0.1:5001:5001 ipfs/go-ipfs:latest
+
+The swarm key initialization can also be done using docker secrets **(requires docker swarm or docker-compose)**:
+
+    cat your_swarm.key | docker secret create swarm_key_secret -
+    docker run -d --name ipfs_host --secret swarm_key_secret -e IPFS_SWARM_KEY_FILE=/run/secrets/swarm_key_secret -v $ipfs_staging:/export -v $ipfs_data:/data/ipfs -p 4001:4001 -p 127.0.0.1:8080:8080 -p 127.0.0.1:5001:5001 ipfs/go-ipfs:latest
 
 ### Troubleshooting
 
@@ -383,6 +446,10 @@ Some places to get you started on the codebase:
   - DHT: https://github.com/libp2p/go-libp2p-kad-dht
   - PubSub: https://github.com/libp2p/go-libp2p-pubsub
 - [IPFS : The `Add` command demystified](https://github.com/ipfs/go-ipfs/tree/master/docs/add-code-flow.md)
+
+### Map of go-ipfs Subsystems
+**WIP**: This is a high-level architecture diagram of the various sub-systems of go-ipfs. To be updated with how they interact. Anyone who has suggestions is welcome to comment [here](https://docs.google.com/drawings/d/1OVpBT2q-NtSJqlPX3buvjYhOnWfdzb85YEsM_njesME/edit) on how we can improve this!
+<img src="https://docs.google.com/drawings/d/e/2PACX-1vS_n1FvSu6mdmSirkBrIIEib2gqhgtatD9awaP2_WdrGN4zTNeg620XQd9P95WT-IvognSxIIdCM5uE/pub?w=1446&amp;h=1036">
 
 ### CLI, HTTP-API, Architecture Diagram
 

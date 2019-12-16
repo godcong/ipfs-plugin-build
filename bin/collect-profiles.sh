@@ -3,10 +3,15 @@ set -x
 set -euo pipefail
 IFS=$'\n\t'
 
-HTTP_API="${1:-localhost:5001}"
+HTTP_API="${1:-127.0.0.1:5001}"
 tmpdir=$(mktemp -d)
 export PPROF_TMPDIR="$tmpdir"
 pushd "$tmpdir"
+
+IPFS_BIN=$(which ipfs)
+if [[ -e "$IPFS_BIN" ]]; then
+    cp "$IPFS_BIN" ipfs
+fi
 
 echo Collecting goroutine stacks
 curl -o goroutines.stacks "http://$HTTP_API"'/debug/pprof/goroutine?debug=2'
@@ -31,7 +36,7 @@ echo "Disabling mutex profiling"
 curl -X POST -v "http://$HTTP_API"'/debug/pprof-mutex/?fraction=0'
 
 popd
-tar cvzf "./ipfs-profile-$(uname -n)-$(date -Iseconds).tar.gz" -C "$tmpdir" .
+tar cvzf "./ipfs-profile-$(uname -n)-$(date +'%Y-%m-%dT%H:%M:%S%z').tar.gz" -C "$tmpdir" .
 rm -rf "$tmpdir"
 
 
