@@ -13,9 +13,9 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/golang-lru v0.5.4
-	github.com/ipfs/go-bitswap v0.5.1
+	github.com/ipfs/go-bitswap v0.6.0
 	github.com/ipfs/go-block-format v0.0.3
-	github.com/ipfs/go-blockservice v0.2.1
+	github.com/ipfs/go-blockservice v0.3.0
 	github.com/ipfs/go-cid v0.3.2
 	github.com/ipfs/go-cidutil v0.0.2
 	github.com/ipfs/go-datastore v0.6.0
@@ -27,13 +27,13 @@ require (
 	github.com/ipfs/go-ds-s3 v0.3.0
 	github.com/ipfs/go-filestore v0.0.2
 	github.com/ipfs/go-fs-lock v0.0.1
-	github.com/ipfs/go-ipfs-blockstore v0.2.1
+	github.com/ipfs/go-ipfs-blockstore v1.2.0
 	github.com/ipfs/go-ipfs-chunker v0.0.3
 	github.com/ipfs/go-ipfs-cmds v0.1.1
 	github.com/ipfs/go-ipfs-config v0.0.12
-	github.com/ipfs/go-ipfs-ds-help v0.1.1
+	github.com/ipfs/go-ipfs-ds-help v1.1.0
 	github.com/ipfs/go-ipfs-exchange-interface v0.1.0
-	github.com/ipfs/go-ipfs-exchange-offline v0.1.1
+	github.com/ipfs/go-ipfs-exchange-offline v0.2.0
 	github.com/ipfs/go-ipfs-files v0.0.4
 	github.com/ipfs/go-ipfs-pinner v0.0.2
 	github.com/ipfs/go-ipfs-posinfo v0.0.1
@@ -41,11 +41,11 @@ require (
 	github.com/ipfs/go-ipfs-routing v0.2.1
 	github.com/ipfs/go-ipfs-util v0.0.2
 	github.com/ipfs/go-ipld-cbor v0.0.5
-	github.com/ipfs/go-ipld-format v0.2.0
+	github.com/ipfs/go-ipld-format v0.3.0
 	github.com/ipfs/go-ipld-git v0.0.2
 	github.com/ipfs/go-ipns v0.3.0
 	github.com/ipfs/go-log v1.0.5
-	github.com/ipfs/go-merkledag v0.5.1
+	github.com/ipfs/go-merkledag v0.8.1
 	github.com/ipfs/go-metrics-interface v0.0.1
 	github.com/ipfs/go-metrics-prometheus v0.0.2
 	github.com/ipfs/go-mfs v0.1.1
