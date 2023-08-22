@@ -16,7 +16,7 @@ require (
 	github.com/ipfs/go-bitswap v0.12.0
 	github.com/ipfs/go-block-format v0.1.1
 	github.com/ipfs/go-blockservice v0.2.1
-	github.com/ipfs/go-cid v0.3.2
+	github.com/ipfs/go-cid v0.4.1
 	github.com/ipfs/go-cidutil v0.0.2
 	github.com/ipfs/go-datastore v0.6.0
 	github.com/ipfs/go-detect-race v0.0.1
@@ -57,7 +57,7 @@ require (
 	github.com/jbenet/go-random v0.0.0-20190219211222-123a90aedc0c
 	github.com/jbenet/go-temp-err-catcher v0.1.0
 	github.com/jbenet/goprocess v0.1.4
-	github.com/libp2p/go-libp2p v0.23.4
+	github.com/libp2p/go-libp2p v0.27.8
 	github.com/libp2p/go-libp2p-autonat-svc v0.1.0
 	github.com/libp2p/go-libp2p-blankhost v0.3.0 // indirect
 	github.com/libp2p/go-libp2p-circuit v0.6.0
@@ -88,21 +88,21 @@ require (
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mr-tron/base58 v1.2.0
-	github.com/multiformats/go-multiaddr v0.8.0
+	github.com/multiformats/go-multiaddr v0.9.0
 	github.com/multiformats/go-multiaddr-dns v0.3.1
 	github.com/multiformats/go-multiaddr-net v0.2.0
-	github.com/multiformats/go-multibase v0.1.1
+	github.com/multiformats/go-multibase v0.2.0
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.13.0
+	github.com/prometheus/client_golang v1.14.0
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/whyrusleeping/base32 v0.0.0-20170828182744-c30ac30633cc
 	github.com/whyrusleeping/go-sysinfo v0.0.0-20190219211824-4a357d4b90b1
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7
 	github.com/whyrusleeping/tar-utils v0.0.0-20180509141711-8c6c8ba81d5c
-	go.uber.org/fx v1.9.0
-	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
+	go.uber.org/fx v1.19.2
+	golang.org/x/sys v0.7.0
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )
 
